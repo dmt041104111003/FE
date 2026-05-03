@@ -16,7 +16,7 @@ function homePathForRole(role: string | null | undefined) {
 
 const MENU = [
   { id: "home", label: "Trang chủ", href: "/" },
-  { id: "trace-scan", label: "Quét truy xuất", href: "/trace-scan" },
+  { id: "trace-scan", label: "Tra cứu thông tin", href: "/trace-scan" },
 ];
 
 export function Header() {
