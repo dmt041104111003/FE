@@ -53,7 +53,7 @@ export default function PublicTraceScanPage() {
             <Link href="/" className="text-sm text-gray-600 underline underline-offset-4 hover:text-gray-900">
               Trở lại trang chủ
             </Link>
-            <Typography variant="h6">Truy xuất nguồn gốc</Typography>
+            <Typography variant="h6">Tra cứu thông tin</Typography>
             <Box sx={{ width: "100%", maxWidth: 460, mx: "auto" }}>
               <Scanner
                 onScan={(result) => {

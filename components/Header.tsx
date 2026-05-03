@@ -99,7 +99,7 @@ export function Header() {
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <Image src="/logo.png" alt="Logo" width={56} height={56} className="w-12 h-12 object-contain" priority />
             <span className="hidden sm:inline text-base md:text-lg font-semibold text-gray-900">
-              Truy xuất nguồn gốc
+              Tra cứu thông tin
             </span>
           </Link>
 
@@ -151,7 +151,7 @@ export function Header() {
                     : "text-gray-800"
                 } hover:underline hover:underline-offset-4`}
               >
-                {isAuthenticated ? (hasRole ? 'Quản trị' : 'Hoàn tất hồ sơ') : 'Đăng nhập'}
+                {isAuthenticated ? (hasRole ? 'Hệ thống' : 'Hoàn tất hồ sơ') : 'Đăng nhập'}
               </span>
             </button>
           </div>
@@ -174,7 +174,7 @@ export function Header() {
               >
                 <Image src="/logo.png" alt="Logo" width={48} height={48} className="w-12 h-12 object-contain" />
                 <span className="text-base font-semibold text-gray-900">
-                  Truy xuất nguồn gốc
+                  Tra cứu thông tin
                 </span>
               </Link>
               <button
@@ -238,7 +238,7 @@ export function Header() {
                       : ""
                   }`}
                 >
-                  {isAuthenticated ? (hasRole ? 'Quản trị' : 'Hoàn tất hồ sơ') : 'Đăng nhập'}
+                  {isAuthenticated ? (hasRole ? 'Hệ thống' : 'Hoàn tất hồ sơ') : 'Đăng nhập'}
                 </span>
                 <span className="material-icons text-lg text-gray-500">
                   chevron_right

@@ -33,8 +33,11 @@ export function AdminLoginPage() {
       <div className="w-full max-w-5xl p-4">
         <div className="grid gap-2">
           <Typography variant="h6" fontWeight={700}>
-            Đăng nhập quản trị
+            Đăng nhập
           </Typography>
+          <a href="/" className="text-sm text-gray-600 hover:underline">
+            Về trang chủ
+          </a>
           {!setup ? (
             <>
               <select

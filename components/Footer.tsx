@@ -87,7 +87,7 @@ export function Footer() {
 
         <div className="border-t border-white/20 mt-6 pt-3 pb-2">
           <p className="text-center text-xs md:text-sm text-white/80">
-            © {new Date().getFullYear()} Truy xuất nguồn gốc
+            © {new Date().getFullYear()} Tra cứu thông tin
           </p>
         </div>
       </div>
