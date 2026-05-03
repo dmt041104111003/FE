@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
-import { useWalletAuth } from "../hooks/useWalletAuth";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3001";
 
@@ -23,7 +22,6 @@ const MENU = [
 export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const { loginWithEternl, isLoading, error } = useWalletAuth();
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
   const [hasRole, setHasRole] = React.useState(false);
 
@@ -56,7 +54,7 @@ export function Header() {
   }, [fetchMe]);
 
   const handleLogin = () => {
-    loginWithEternl();
+    window.location.href = "/admin#/login";
   };
 
   const handleDashboardClick = async () => {
@@ -93,12 +91,6 @@ export function Header() {
       document.body.style.overflow = "";
     };
   }, [mobileMenuOpen]);
-
-  React.useEffect(() => {
-    if (error) {
-      alert(error);
-    }
-  }, [error]);
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 m-0 p-0 bg-white">
@@ -148,7 +140,6 @@ export function Header() {
             <button
               onClick={isAuthenticated ? handleDashboardClick : handleLogin}
               className="header-nav-item flex items-center gap-1 px-3 py-1 md:py-1.5 text-sm md:text-base font-medium transition-all bg-transparent border-none cursor-pointer"
-              disabled={isLoading}
             >
               <span
                 className={`${
@@ -158,9 +149,9 @@ export function Header() {
                   pathname.startsWith("/agent")
                     ? "underline underline-offset-4 text-red-400"
                     : "text-gray-800"
-                } hover:underline hover:underline-offset-4 ${isLoading ? "opacity-50" : ""}`}
+                } hover:underline hover:underline-offset-4`}
               >
-                {isLoading ? '...' : (isAuthenticated ? (hasRole ? 'Quản trị' : 'Hoàn tất hồ sơ') : 'Đăng nhập')}
+                {isAuthenticated ? (hasRole ? 'Quản trị' : 'Hoàn tất hồ sơ') : 'Đăng nhập'}
               </span>
             </button>
           </div>
@@ -235,8 +226,7 @@ export function Header() {
                   pathname.startsWith("/agent")
                     ? "bg-gray-100"
                     : ""
-                } ${isLoading ? "opacity-50" : ""}`}
-                disabled={isLoading}
+                }`}
               >
                 <span
                   className={`font-medium ${
@@ -248,7 +238,7 @@ export function Header() {
                       : ""
                   }`}
                 >
-                  {isLoading ? '...' : (isAuthenticated ? (hasRole ? 'Quản trị' : 'Hoàn tất hồ sơ') : 'Đăng nhập')}
+                  {isAuthenticated ? (hasRole ? 'Quản trị' : 'Hoàn tất hồ sơ') : 'Đăng nhập'}
                 </span>
                 <span className="material-icons text-lg text-gray-500">
                   chevron_right
