@@ -8,7 +8,7 @@ export function AudienceSection() {
       <div className="max-w-6xl mx-auto px-4 pb-16 md:pb-20">
         <div className="max-w-3xl mx-auto text-center mb-8 md:mb-10">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-            Tra cứu thông tin dành cho ai?
+            Truy xuất nguồn gốc dành cho ai?
           </h2>
         </div>
         <div className="w-full max-w-4xl mx-auto space-y-8">
@@ -22,7 +22,7 @@ export function AudienceSection() {
                 Người tiêu dùng:
               </h3>
               <p className="text-sm md:text-base text-gray-800 leading-relaxed text-justify">
-                Tra cứu thông tin cung cấp đầy đủ thông tin mà người tiêu dùng cần
+                Truy xuất nguồn gốc cung cấp đầy đủ thông tin mà người tiêu dùng cần
                 biết về thực phẩm đang sử dụng. Giá trị của dữ liệu này sẽ khác nhau
                 tùy theo vai trò của từng bên trong chuỗi cung ứng.
               </p>

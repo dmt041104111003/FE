@@ -2,15 +2,13 @@ import { useEffect, useState } from "react";
 
 const SETUP_PROFILE_KEY = "pending_profile_setup";
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
-const NETWORKS = ["mainnet", "preprod", "preview"] as const;
-type CardanoNetwork = (typeof NETWORKS)[number];
 
 type WalletAPI = {
   getChangeAddress: () => Promise<string | { address: string }>;
   getRewardAddresses?: () => Promise<string[]>;
   signData?: (address: string, payload: string) => Promise<{ signature: string; key: string }>;
-  experimental?: { signData?: WalletAPI["signData"] };
-  enable?: () => Promise<WalletAPI>;
+  experimental?: any;
+  enable?: () => Promise<unknown>;
 };
 
 type SetupProfileState = {
@@ -18,19 +16,30 @@ type SetupProfileState = {
   roles: Array<{ id: number; code: string; name?: string | null }>;
 };
 
-type WalletOption = { id: string; label: string };
-
 export function readSetupProfileState(): SetupProfileState | null {
   if (typeof window === "undefined") return null;
+
   try {
     const raw = window.sessionStorage.getItem(SETUP_PROFILE_KEY);
     if (!raw) return null;
+
     const parsed = JSON.parse(raw) as SetupProfileState;
-    if (!parsed?.walletAddress) return null;
+    if (!parsed || !parsed.walletAddress) return null;
+
     return parsed;
   } catch {
     return null;
   }
+}
+
+function getAddress(value: any) {
+  if (!value) return "";
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "object" && typeof value.address === "string") return value.address.trim();
+  if (value.paymentAddress) return String(value.paymentAddress).trim();
+  if (value.walletAddress) return String(value.walletAddress).trim();
+  if (value.sub) return String(value.sub).trim();
+  return "";
 }
 
 function homePathForRole(role: string | null | undefined) {
@@ -40,53 +49,48 @@ function homePathForRole(role: string | null | undefined) {
   return "/enterprise";
 }
 
-function getAddress(value: any): string {
-  if (!value) return "";
-  if (typeof value === "string") return value.trim();
-  if (typeof value === "object" && typeof value.address === "string") return value.address.trim();
-  return String(value.paymentAddress || value.walletAddress || value.sub || "").trim();
-}
-
-function detectWallets(): WalletOption[] {
-  if (typeof window === "undefined") return [];
-  const cardano = (window as any).cardano;
-  if (!cardano || typeof cardano !== "object") return [];
-  return Object.keys(cardano)
-    .filter((id) => typeof cardano[id]?.enable === "function")
-    .map((id) => ({ id, label: String(cardano[id]?.name || id) }));
-}
-
-function normalizeNetwork(value: string | null): CardanoNetwork {
-  const network = String(value || "").toLowerCase().trim();
-  if (network === "mainnet" || network === "preview" || network === "preprod") return network;
-  return "preprod";
-}
-
-async function loginByWallet(walletId: string, network: CardanoNetwork) {
-  const cardano = (window as any).cardano;
-  const wallet = cardano?.[walletId] as WalletAPI | undefined;
-  if (!wallet?.enable) throw new Error("Wallet chưa sẵn sàng.");
-  const api = await wallet.enable();
-  const walletAddress = getAddress(await api.getChangeAddress());
-  if (!walletAddress) throw new Error("Không lấy được địa chỉ ví.");
-
-  const nonceRes = await fetch(`${BACKEND_URL}/auth/nonce`, {
+async function getNonce(walletAddress: string) {
+  const response = await fetch(`${BACKEND_URL}/auth/nonce`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify({ stakeAddress: walletAddress }),
   });
-  if (!nonceRes.ok) throw new Error(await nonceRes.text());
-  const nonce = String((await nonceRes.json())?.nonce || "").trim();
-  if (!nonce) throw new Error("Nonce rỗng.");
 
-  const signer = api.signData || api.experimental?.signData;
-  if (!signer) throw new Error("Ví không hỗ trợ signData.");
-  const rewardAddresses = await api.getRewardAddresses?.().catch(() => []);
-  const signAddress = rewardAddresses?.[0] || walletAddress;
-  const signed = await signer(signAddress, nonce);
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to get nonce from server: ${errorText}`);
+  }
 
-  const verifyRes = await fetch(`${BACKEND_URL}/auth/verify`, {
+  const json = await response.json();
+  const nonce = String(json?.nonce || "").trim();
+  if (!nonce) throw new Error("Server returned empty nonce.");
+
+  return nonce;
+}
+
+async function signNonce(api: WalletAPI, walletAddress: string, nonce: string) {
+  let signer = api.signData;
+  if (!signer && api.experimental) signer = api.experimental.signData;
+  if (!signer) throw new Error("Wallet does not support data signing");
+
+  let rewardAddresses: string[] = [];
+
+  try {
+    if (api.getRewardAddresses) {
+      const rows = await api.getRewardAddresses();
+      if (Array.isArray(rows)) rewardAddresses = rows;
+    }
+  } catch {}
+
+  let signAddress = walletAddress;
+  if (rewardAddresses.length > 0) signAddress = rewardAddresses[0];
+
+  return signer(signAddress, nonce);
+}
+
+async function verifyWallet(walletAddress: string, nonce: string, signed: { signature: string; key: string }) {
+  const response = await fetch(`${BACKEND_URL}/auth/verify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -95,77 +99,122 @@ async function loginByWallet(walletId: string, network: CardanoNetwork) {
       nonce,
       signature: signed.signature,
       key: signed.key,
-      network,
     }),
   });
-  if (!verifyRes.ok) throw new Error("Verify thất bại.");
-  return { walletAddress, data: await verifyRes.json() };
+
+  if (!response.ok) {
+    throw new Error("Failed to verify signature");
+  }
+
+  return response.json();
 }
 
 export function useWalletAuth() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [setup, setSetup] = useState<SetupProfileState | null>(null);
-  const [wallets, setWallets] = useState<WalletOption[]>([]);
-  const [selectedWallet, setSelectedWallet] = useState("");
-  const [network, setNetwork] = useState<CardanoNetwork>("preprod");
 
-  useEffect(() => {
-    const detected = detectWallets();
-    setWallets(detected);
-    setSelectedWallet(String(localStorage.getItem("cardano_wallet_id") || detected[0]?.id || ""));
-    setNetwork(normalizeNetwork(localStorage.getItem("cardano_network")));
-    const pending = readSetupProfileState();
-    if (pending) setSetup(pending);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("cardano_wallet_id", selectedWallet || "");
-  }, [selectedWallet]);
-
-  useEffect(() => {
-    localStorage.setItem("cardano_network", network);
-  }, [network]);
-
-  const loginWithWallet = async () => {
+  const loginWithEternl = async () => {
     setIsLoading(true);
     setError(null);
+
     try {
-      if (!selectedWallet) throw new Error("Chọn ví trước.");
-      const { walletAddress, data } = await loginByWallet(selectedWallet, network);
-      if (data?.needProfile) {
-        const roles = Array.isArray(data.roles) ? data.roles : [];
-        window.sessionStorage.setItem(SETUP_PROFILE_KEY, JSON.stringify({ walletAddress, roles }));
-        setSetup({ walletAddress, roles });
-        return;
+      const cardano = (window as any).cardano;
+      if (!cardano) {
+        throw new Error("No Cardano wallet found. Please install a Cardano wallet like Eternl, Nami, or Flint.");
       }
-      window.sessionStorage.removeItem(SETUP_PROFILE_KEY);
-      window.location.assign(homePathForRole(data?.profile?.roleCode || data?.profile?.role));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Lỗi đăng nhập.");
+
+      const eternl = cardano.eternl as WalletAPI | undefined;
+      if (!eternl || typeof eternl.enable !== "function") {
+        throw new Error("Eternl wallet not found. Please install and enable the Eternl extension.");
+      }
+
+      const api = (await cardano.eternl.enable()) as WalletAPI;
+      const walletAddress = getAddress(await api.getChangeAddress());
+      if (!walletAddress) throw new Error("Unable to get wallet address");
+      const nonce = await getNonce(walletAddress);
+      const signed = await signNonce(api, walletAddress, nonce);
+      const verifyData = await verifyWallet(walletAddress, nonce, signed);
+
+      if (verifyData.needProfile) {
+        const roles = Array.isArray(verifyData.roles) ? verifyData.roles : [];
+        const setupState = { walletAddress, roles };
+        window.sessionStorage.setItem(SETUP_PROFILE_KEY, JSON.stringify(setupState));
+        window.location.assign("/admin#/login");
+      } else {
+        window.sessionStorage.removeItem(SETUP_PROFILE_KEY);
+        const roleCode = verifyData.profile?.roleCode || verifyData.profile?.role;
+        window.location.assign(homePathForRole(roleCode));
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const setupDefaults = {
-    walletAddress: setup?.walletAddress || "",
-    displayName: "",
-    roleCode: String(setup?.roles?.[0]?.code || ""),
-    phoneNumber: "",
-  };
+  useEffect(() => {
+    const hydrate = async () => {
+      const pending = readSetupProfileState();
+      if (pending) {
+        setSetup(pending);
+        return;
+      }
+
+      const meResponse = await fetch(`${BACKEND_URL}/auth/me`, {
+        method: "GET",
+        credentials: "include",
+      }).catch(() => null);
+      if (!meResponse || !meResponse.ok) return;
+
+      const meJson = await meResponse.json();
+      const hasRole = meJson?.profile?.roleCode || meJson?.user?.roleCode || meJson?.user?.role;
+      if (hasRole) {
+        const target = homePathForRole(hasRole);
+        const currentPath = window.location.pathname;
+        const isAuthEntry =
+          currentPath === "/" ||
+          currentPath.startsWith("/admin");
+        if (isAuthEntry && currentPath !== target) {
+          window.location.assign(target);
+        }
+        return;
+      }
+
+      const walletAddress = getAddress(meJson?.user);
+      if (!walletAddress) return;
+
+      const rolesResponse = await fetch(`${BACKEND_URL}/auth/roles`, {
+        method: "GET",
+        credentials: "include",
+      }).catch(() => null);
+
+      let roles = [];
+      if (rolesResponse && rolesResponse.ok) {
+        const rows = await rolesResponse.json();
+        if (Array.isArray(rows)) roles = rows;
+      }
+
+      setSetup({ walletAddress, roles });
+    };
+
+    hydrate().catch(() => undefined);
+  }, []);
+
+  let firstRoleCode = "";
+  if (setup && Array.isArray(setup.roles) && setup.roles.length > 0) {
+    firstRoleCode = String(setup.roles[0]?.code || "");
+  }
+
+  const walletAddress = setup ? setup.walletAddress : "";
+  const setupDefaults = { walletAddress, displayName: "", roleCode: firstRoleCode, phoneNumber: "" };
 
   return {
+    loginWithEternl,
     isLoading,
     error,
     setup,
     setupDefaults,
-    wallets,
-    selectedWallet,
-    setSelectedWallet,
-    network,
-    setNetwork,
-    supportedNetworks: NETWORKS,
-    loginWithWallet,
   };
 }

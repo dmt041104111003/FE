@@ -19,10 +19,10 @@ export function AboutSection() {
 
           <div className="space-y-4">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 md:text-white">
-              Tra cứu thông tin nông sản thực phẩm
+              Truy xuất nguồn gốc nông sản thực phẩm
             </h2>
             <p className="text-sm md:text-base text-gray-700 md:text-gray-100 leading-relaxed text-justify">
-              Tra cứu thông tin đầu-cuối giúp mọi bên liên quan kiểm chứng được
+              Truy xuất nguồn gốc đầu-cuối giúp mọi bên liên quan kiểm chứng được
               toàn bộ hành trình của từng lô hàng, từ nông trại hoặc cơ sở đóng gói,
               qua các điểm logistics đến người mua cuối cùng. Quét QR cho biết sản
               phẩm là gì, đã đi qua đâu và ai chịu trách nhiệm ở từng chặng.

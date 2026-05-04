@@ -14,67 +14,24 @@ function homePathForRole(role: string | null | undefined) {
 
 export function AdminLoginPage() {
   const notify = useNotify();
-  const {
-    loginWithWallet,
-    isLoading,
-    error,
-    setup,
-    setupDefaults,
-    wallets,
-    selectedWallet,
-    setSelectedWallet,
-    network,
-    setNetwork,
-    supportedNetworks,
-  } = useWalletAuth();
+  const { loginWithEternl, isLoading, error, setup, setupDefaults } = useWalletAuth();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f6f7fb] px-4">
       <div className="w-full max-w-5xl p-4">
         <div className="grid gap-2">
           <Typography variant="h6" fontWeight={700}>
-            Đăng nhập
+            Đăng nhập quản trị
           </Typography>
-          <a href="/" className="text-sm text-gray-600 hover:underline">
-            Về trang chủ
-          </a>
           {!setup ? (
-            <>
-              <select
-                value={selectedWallet}
-                onChange={(e) => setSelectedWallet(e.target.value)}
-                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
-              >
-                {wallets.length === 0 ? (
-                  <option value="">Không tìm thấy ví Cardano</option>
-                ) : (
-                  wallets.map((wallet) => (
-                    <option key={wallet.id} value={wallet.id}>
-                      {wallet.label}
-                    </option>
-                  ))
-                )}
-              </select>
-              <select
-                value={network}
-                onChange={(e) => setNetwork(e.target.value as "mainnet" | "preprod" | "preview")}
-                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
-              >
-                {supportedNetworks.map((networkCode) => (
-                  <option key={networkCode} value={networkCode}>
-                    {networkCode}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={loginWithWallet}
-                disabled={isLoading || wallets.length === 0}
-                className="w-full rounded-md bg-black px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-              >
-                {isLoading ? "Đang kết nối ví..." : "Đăng nhập bằng ví"}
-              </button>
-            </>
+            <button
+              type="button"
+              onClick={loginWithEternl}
+              disabled={isLoading}
+              className="w-full rounded-md bg-black px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+            >
+              {isLoading ? "Đang kết nối ví..." : "Đăng nhập bằng ví"}
+            </button>
           ) : (
             <>
               <ProfileResourceCreate

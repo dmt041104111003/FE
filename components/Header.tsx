@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
+import { useWalletAuth } from "../hooks/useWalletAuth";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3001";
 
@@ -16,12 +17,13 @@ function homePathForRole(role: string | null | undefined) {
 
 const MENU = [
   { id: "home", label: "Trang chủ", href: "/" },
-  { id: "trace-scan", label: "Tra cứu thông tin", href: "/trace-scan" },
+  { id: "trace-scan", label: "Quét truy xuất", href: "/trace-scan" },
 ];
 
 export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const { loginWithEternl, isLoading, error } = useWalletAuth();
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
   const [hasRole, setHasRole] = React.useState(false);
 
@@ -54,7 +56,7 @@ export function Header() {
   }, [fetchMe]);
 
   const handleLogin = () => {
-    window.location.href = "/admin#/login";
+    loginWithEternl();
   };
 
   const handleDashboardClick = async () => {
@@ -92,6 +94,12 @@ export function Header() {
     };
   }, [mobileMenuOpen]);
 
+  React.useEffect(() => {
+    if (error) {
+      alert(error);
+    }
+  }, [error]);
+
   return (
     <div className="fixed top-0 left-0 right-0 z-50 m-0 p-0 bg-white">
       <div className="max-w-[1920px] mx-auto flex items-center justify-between px-4 md:px-10 py-3.5 md:py-5">
@@ -99,7 +107,7 @@ export function Header() {
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <Image src="/logo.png" alt="Logo" width={56} height={56} className="w-12 h-12 object-contain" priority />
             <span className="hidden sm:inline text-base md:text-lg font-semibold text-gray-900">
-              Tra cứu thông tin
+              Truy xuất nguồn gốc
             </span>
           </Link>
 
@@ -140,6 +148,7 @@ export function Header() {
             <button
               onClick={isAuthenticated ? handleDashboardClick : handleLogin}
               className="header-nav-item flex items-center gap-1 px-3 py-1 md:py-1.5 text-sm md:text-base font-medium transition-all bg-transparent border-none cursor-pointer"
+              disabled={isLoading}
             >
               <span
                 className={`${
@@ -149,9 +158,9 @@ export function Header() {
                   pathname.startsWith("/agent")
                     ? "underline underline-offset-4 text-red-400"
                     : "text-gray-800"
-                } hover:underline hover:underline-offset-4`}
+                } hover:underline hover:underline-offset-4 ${isLoading ? "opacity-50" : ""}`}
               >
-                {isAuthenticated ? (hasRole ? 'Hệ thống' : 'Hoàn tất hồ sơ') : 'Đăng nhập'}
+                {isLoading ? '...' : (isAuthenticated ? (hasRole ? 'Quản trị' : 'Hoàn tất hồ sơ') : 'Đăng nhập')}
               </span>
             </button>
           </div>
@@ -174,7 +183,7 @@ export function Header() {
               >
                 <Image src="/logo.png" alt="Logo" width={48} height={48} className="w-12 h-12 object-contain" />
                 <span className="text-base font-semibold text-gray-900">
-                  Tra cứu thông tin
+                  Truy xuất nguồn gốc
                 </span>
               </Link>
               <button
@@ -226,7 +235,8 @@ export function Header() {
                   pathname.startsWith("/agent")
                     ? "bg-gray-100"
                     : ""
-                }`}
+                } ${isLoading ? "opacity-50" : ""}`}
+                disabled={isLoading}
               >
                 <span
                   className={`font-medium ${
@@ -238,7 +248,7 @@ export function Header() {
                       : ""
                   }`}
                 >
-                  {isAuthenticated ? (hasRole ? 'Hệ thống' : 'Hoàn tất hồ sơ') : 'Đăng nhập'}
+                  {isLoading ? '...' : (isAuthenticated ? (hasRole ? 'Quản trị' : 'Hoàn tất hồ sơ') : 'Đăng nhập')}
                 </span>
                 <span className="material-icons text-lg text-gray-500">
                   chevron_right
