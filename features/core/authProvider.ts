@@ -53,7 +53,6 @@ export const adminAuthProvider: AuthProvider = {
       const pathname = window.location.pathname;
       const onRolePage =
         pathname.startsWith("/enterprise") ||
-        pathname.startsWith("/transit") ||
         pathname.startsWith("/agent");
       const onSetupPage =
         pathname.startsWith("/admin") && window.location.hash.includes("/login");

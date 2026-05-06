@@ -11,28 +11,6 @@ import { parseStringList } from "@/features/core/metadata/share/parseStringList"
 import { positiveNumber } from "@/features/resources/shared/numberHelpers";
 import { normalizeParticipantRow, splitLocationLabel, toLocationLabel } from "@/features/resources/shared/locationHelpers";
 import { useContainerFormSections } from "@/hooks/useContainerFormSections";
-import { useAdministrativeArea } from "@/hooks/useAdministrativeArea";
-
-function ParticipantAdministrativeAreaFields({
-  index,
-  disabled = false,
-}: {
-  index: number;
-  disabled?: boolean;
-}) {
-  const { choices, provinceId, districtId } = useAdministrativeArea(
-    `participantRows.${index}.provinceId`,
-    `participantRows.${index}.districtId`,
-  );
-
-  return (
-    <>
-      <SelectInput source="provinceId" label="Tỉnh/Thành" choices={choices.provinces} optionValue="id" optionText="name" validate={[required()]} disabled={disabled} fullWidth />
-      <SelectInput source="districtId" label="Quận/Huyện" choices={choices.districts} optionValue="id" optionText="name" validate={[required()]} disabled={disabled || !provinceId} fullWidth />
-      <SelectInput source="wardId" label="Phường/Xã" choices={choices.wards} optionValue="id" optionText="name" validate={[required()]} disabled={disabled || !districtId} fullWidth />
-    </>
-  );
-}
 
 export function parseParticipantRows(record: any) {
   const wallets = parseStringList(record?.participantWalletAddresses);
@@ -55,7 +33,7 @@ function ParticipantRow({ disabled = false }: { disabled?: boolean }) {
   return (
     <>
       <TextInput source="walletAddress" label="Địa chỉ ví" validate={[required()]} disabled={disabled} fullWidth />
-      <ParticipantAdministrativeAreaFields index={index} disabled={disabled} />
+      <TextInput source="locationLabel" label="Vị trí" validate={[required()]} disabled={disabled} fullWidth />
     </>
   );
 }

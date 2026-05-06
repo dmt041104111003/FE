@@ -2,7 +2,6 @@
 
 export const ROLE_CHOICES = [
   { id: "ENTERPRISE", name: "Doanh nghiệp" },
-  { id: "TRANSIT", name: "Trung chuyển" },
   { id: "AGENT", name: "Đại lý" },
 ];
 

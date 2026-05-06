@@ -3,7 +3,6 @@
 import { fetchUtils } from "react-admin";
 import type { DataProvider } from "react-admin";
 import simpleRestProvider from "ra-data-simple-rest";
-import { captureCurrentGpsLocation } from "@/features/resources/shared/location";
 import { buildProductionMetadata, buildProductionMetadataPatch } from "@/features/core/metadata/productionMetadata";
 import { buildContainerMetadata } from "@/features/core/metadata/containerMetadata";
 import { buildMappedMetadata } from "@/features/core/metadata/share/buildMappedMetadata";
@@ -55,7 +54,6 @@ function getOnchainFlowDeps() {
     httpClient,
     cleanString,
     normalizeId: resolveId,
-    captureCurrentGpsLocation,
     getSessionOwner: async () => {
       const me = (await getMe()) as any;
       const owner =

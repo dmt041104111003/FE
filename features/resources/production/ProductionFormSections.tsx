@@ -12,7 +12,6 @@ import {
 import { useWatch } from "react-hook-form";
 import { positiveNumber } from "@/features/resources/shared/numberHelpers";
 import { CERTIFICATIONS } from "./constants";
-import { ProductionAdministrativeAreaFields } from "./ProductionAdministrativeAreaFields";
 
 export function ProductionFormSections() {
   const watchedStatus = useWatch({ name: "status" });
@@ -43,7 +42,7 @@ export function ProductionFormSections() {
             validate={[required()]}
             fullWidth
           />
-          <ProductionAdministrativeAreaFields disabled={lockedCore} />
+          <TextInput source="location" label="Vị trí" disabled={lockedCore} validate={[required()]} fullWidth />
           <SelectInput
             source="farmingMethod"
             label="Phương thức canh tác"

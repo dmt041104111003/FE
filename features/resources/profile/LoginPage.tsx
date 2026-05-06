@@ -7,7 +7,6 @@ import { ProfileResourceCreate } from "./ProfileResourceCreate";
 
 function homePathForRole(role: string | null | undefined) {
   const code = String(role || "").toUpperCase();
-  if (code === "TRANSIT") return "/transit";
   if (code === "AGENT") return "/agent";
   return "/enterprise";
 }

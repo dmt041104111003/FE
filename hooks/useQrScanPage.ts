@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useDataProvider, useGetList } from "react-admin";
 import { cleanString } from "@/features/core/metadata/share/cleanString";
-import { captureCurrentGpsLocation } from "@/features/resources/shared/location";
 import { parsePositiveNumber } from "@/features/resources/shared/numberHelpers";
 
 const DEFAULT_WAREHOUSE_KEY = "qr-scan-default-warehouse-id";
@@ -121,9 +120,6 @@ export function useQrScanPage() {
     setStatusError("");
     setStatusText("");
     try {
-      const gps = await captureCurrentGpsLocation();
-      const gpsTriple = `${cleanString(gps?.provinceId)}, ${cleanString(gps?.districtId)}, ${cleanString(gps?.wardId)}`;
-      if (!gpsTriple.replace(/[,\s]/g, "")) throw new Error("Không đọc được GPS location hiện tại.");
       const data = { warehouseId, containerInventoryKey: inventoryKey, conditions: "" };
       await dataProvider.create("warehouse-storage", { data });
       setStatusText(`Đã nhập kho: ${inventoryKey}`);

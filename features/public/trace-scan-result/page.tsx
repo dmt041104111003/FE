@@ -3,7 +3,6 @@
 import * as React from "react";
 import { Alert, Box, Card, CardContent, Stack, Typography } from "@mui/material";
 import Link from "next/link";
-import { getDistrictOptions, getProvinceOptions, getWardOptions } from "@/features/resources/shared/location";
 import TraceHistory from "./history";
 import TracePoints from "./points";
 import TraceInfo from "./traceInfo";
@@ -52,25 +51,7 @@ export default function PublicTraceScanResultPage({ inventoryKey }: { inventoryK
               }))
               .filter((x: any) => x.walletAddress)
           : [];
-        const points = await Promise.all(pointsRaw.map(async (x) => {
-          const text = cleanString(x.location);
-          const parts = text.split(",").map((v) => cleanString(v)).filter(Boolean);
-          if (parts.length < 3) return x;
-          const provinceId = parts[0];
-          const districtId = parts[1];
-          const wardId = parts[2];
-          try {
-            const provinces = await getProvinceOptions();
-            const provinceName = provinces.find((v) => cleanString(v.id) === provinceId)?.name || provinceId;
-            const districts = await getDistrictOptions(provinceId);
-            const districtName = districts.find((v) => cleanString(v.id) === districtId)?.name || districtId;
-            const wards = await getWardOptions(districtId);
-            const wardName = wards.find((v) => cleanString(v.id) === wardId)?.name || wardId;
-            return { ...x, location: `${wardName}, ${districtName}, ${provinceName}` };
-          } catch {
-            return x;
-          }
-        }));
+        const points = pointsRaw;
         const latestSignerWallet = cleanString(json?.latestSignerWallet).toLowerCase();
         if (!points.length) {
           throw new Error(cleanString(json?.message) || "Không có dữ liệu point.");
@@ -94,27 +75,7 @@ export default function PublicTraceScanResultPage({ inventoryKey }: { inventoryK
           json?.productionMetadata && typeof json.productionMetadata === "object"
             ? (json.productionMetadata as Record<string, unknown>)
             : null;
-        let productionMetadata = productionMetadataRaw;
-        if (productionMetadataRaw) {
-          const text = cleanString(productionMetadataRaw.location);
-          const parts = text.split(",").map((v) => cleanString(v)).filter(Boolean);
-          if (parts.length >= 3) {
-            const provinceId = parts[0];
-            const districtId = parts[1];
-            const wardId = parts[2];
-            try {
-              const provinces = await getProvinceOptions();
-              const provinceName = provinces.find((v) => cleanString(v.id) === provinceId)?.name || provinceId;
-              const districts = await getDistrictOptions(provinceId);
-              const districtName = districts.find((v) => cleanString(v.id) === districtId)?.name || districtId;
-              const wards = await getWardOptions(districtId);
-              const wardName = wards.find((v) => cleanString(v.id) === wardId)?.name || wardId;
-              productionMetadata = { ...productionMetadataRaw, location: `${wardName}, ${districtName}, ${provinceName}` };
-            } catch {
-              productionMetadata = productionMetadataRaw;
-            }
-          }
-        }
+        const productionMetadata = productionMetadataRaw;
         if (!mounted) return;
         setTrace({
           containerTitle,

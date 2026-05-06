@@ -10,7 +10,6 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:300
 
 function homePathForRole(role: string | null | undefined) {
   const code = String(role || "").toUpperCase();
-  if (code === "TRANSIT") return "/transit";
   if (code === "AGENT") return "/agent";
   return "/enterprise";
 }
@@ -81,7 +80,6 @@ export function Header() {
       ? "trace-scan"
       : pathname.startsWith("/admin") ||
         pathname.startsWith("/enterprise") ||
-        pathname.startsWith("/transit") ||
         pathname.startsWith("/agent")
       ? "dashboard"
       : null;
@@ -154,7 +152,6 @@ export function Header() {
                 className={`${
                   pathname.startsWith("/admin") ||
                   pathname.startsWith("/enterprise") ||
-                  pathname.startsWith("/transit") ||
                   pathname.startsWith("/agent")
                     ? "underline underline-offset-4 text-red-400"
                     : "text-gray-800"
@@ -231,7 +228,6 @@ export function Header() {
                 className={`flex items-center justify-between w-full px-4 py-3 text-left rounded-lg transition-colors text-gray-800 hover:bg-gray-100 ${
                   pathname.startsWith("/admin") ||
                   pathname.startsWith("/enterprise") ||
-                  pathname.startsWith("/transit") ||
                   pathname.startsWith("/agent")
                     ? "bg-gray-100"
                     : ""
@@ -242,7 +238,6 @@ export function Header() {
                   className={`font-medium ${
                     pathname.startsWith("/admin") ||
                     pathname.startsWith("/enterprise") ||
-                    pathname.startsWith("/transit") ||
                     pathname.startsWith("/agent")
                       ? "text-red-400 underline underline-offset-4"
                       : ""
