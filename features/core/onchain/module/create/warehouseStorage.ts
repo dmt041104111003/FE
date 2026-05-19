@@ -39,7 +39,6 @@ export async function createWarehouseStorageOnchain(params: any, deps: any) {
       storage_op: currentStorageId ? "UPDATE" : "IN",
       warehouse_id: createPayload?.warehouseId || params.previousData?.warehouseId,
       container_ref_inline: formatProductionRefInline(containerInventoryKey),
-      current_location: undefined,
       storage_created_at: deps.cleanString(createPayload?.createdAt) || new Date().toISOString(),
       storage_updated_at: new Date().toISOString(),
       storage_conditions: createPayload?.conditions,

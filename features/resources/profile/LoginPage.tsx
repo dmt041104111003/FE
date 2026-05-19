@@ -1,19 +1,23 @@
 "use client";
 
+import * as React from "react";
 import { Typography } from "@mui/material";
 import { useNotify } from "react-admin";
 import { useWalletAuth } from "@/hooks/useWalletAuth";
+import { WalletPickerModal } from "@/components/WalletPickerModal";
 import { ProfileResourceCreate } from "./ProfileResourceCreate";
 
 function homePathForRole(role: string | null | undefined) {
   const code = String(role || "").toUpperCase();
+  if (code === "TRANSIT") return "/transit";
   if (code === "AGENT") return "/agent";
   return "/enterprise";
 }
 
 export function AdminLoginPage() {
   const notify = useNotify();
-  const { loginWithEternl, isLoading, error, setup, setupDefaults } = useWalletAuth();
+  const { loginWithWallet, isLoading, error, setup, setupDefaults } = useWalletAuth();
+  const [walletPickerOpen, setWalletPickerOpen] = React.useState(false);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f6f7fb] px-4">
@@ -23,14 +27,25 @@ export function AdminLoginPage() {
             Đăng nhập quản trị
           </Typography>
           {!setup ? (
-            <button
-              type="button"
-              onClick={loginWithEternl}
-              disabled={isLoading}
-              className="w-full rounded-md bg-black px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-            >
-              {isLoading ? "Đang kết nối ví..." : "Đăng nhập bằng ví"}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => setWalletPickerOpen(true)}
+                disabled={isLoading}
+                className="w-full rounded-md bg-[#c41e3a] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {isLoading ? "Đang kết nối ví..." : "Đăng nhập bằng ví"}
+              </button>
+              <WalletPickerModal
+                open={walletPickerOpen}
+                onClose={() => setWalletPickerOpen(false)}
+                onSelect={(walletId) => {
+                  setWalletPickerOpen(false);
+                  void loginWithWallet(walletId);
+                }}
+                isLoading={isLoading}
+              />
+            </>
           ) : (
             <>
               <ProfileResourceCreate

@@ -12,7 +12,7 @@ function getStorageKey(row: any) {
 }
 
 function getContainerCapacity(row: any) {
-  return parsePositiveNumber(row?.actualCapacityKg || row?.capacityKg);
+  return parsePositiveNumber(row?.weightPerBoxKg || row?.actualCapacityKg || row?.capacityKg);
 }
 
 export function useQrScanPage() {
@@ -82,10 +82,6 @@ export function useQrScanPage() {
     }
 
     if (!warehouse) return void setStatusError("Kho mặc định không hợp lệ.");
-
-    const warehouseLocation = cleanString(warehouse?.location);
-    const warehouseParts = warehouseLocation.split(",").map((x) => cleanString(x)).filter(Boolean);
-    if (warehouseParts.length < 3) return void setStatusError("Kho chưa có location hợp lệ dạng 'tỉnh, quận, xã'.");
 
     const selectedContainerCapacity = getContainerCapacity(selectedContainer);
     const warehouseCapacity = parsePositiveNumber(warehouse?.capacity);

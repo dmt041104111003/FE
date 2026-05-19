@@ -5,6 +5,7 @@ const APP_ADMIN_SETUP = "/admin";
 
 function homePathForRole(role: string | null | undefined) {
   const code = String(role || "").toUpperCase();
+  if (code === "TRANSIT") return "/transit";
   if (code === "AGENT") return "/agent";
   return "/enterprise";
 }
@@ -29,8 +30,7 @@ function getRoleFromJwt(token: string): string | null {
   const payload = decodeJwtPayload(token);
   if (!payload) return null;
   const role = payload.role ?? payload.roleCode;
-  if (typeof role !== "string") return null;
-  return role.toUpperCase() === "TRANSIT" ? "AGENT" : role;
+  return typeof role === "string" ? role : null;
 }
 
 function getProfileIdFromJwt(token: string): string | null {
@@ -82,6 +82,8 @@ export const config = {
     "/scan/:path*",
     "/agent",
     "/agent/:path*",
+    "/transit",
+    "/transit/:path*",
     "/enterprise",
     "/enterprise/:path*",
     "/admin",

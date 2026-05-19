@@ -102,7 +102,11 @@ export const adminDataProvider: DataProvider = {
     const url = `${BACKEND_URL}/${resource}${query && query.size ? `?${query.toString()}` : ""}`;
     const { json } = await httpClient(url, { method: "GET" });
     const payload = (json as any) || {};
-    const rows = Array.isArray(payload) ? payload : Array.isArray(payload.data) ? payload.data : [];
+    let rows = Array.isArray(payload) ? payload : Array.isArray(payload.data) ? payload.data : [];
+    const filterWarehouseId = cleanString(params.filter?.warehouseId);
+    if (resource === "warehouse-storage" && filterWarehouseId) {
+      rows = rows.filter((row: any) => cleanString(row?.warehouseId) === filterWarehouseId);
+    }
     const totalFromPayload = Number(payload.total);
     const total = Number.isFinite(totalFromPayload) ? totalFromPayload : rows.length;
     const page = Number(params.pagination?.page || 1);

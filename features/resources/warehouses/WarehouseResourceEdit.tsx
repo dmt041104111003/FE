@@ -1,20 +1,55 @@
 "use client";
 
 import { Edit, required, SimpleForm, TextInput } from "react-admin";
-import { EDIT_PAGE_SX, FORM_SX } from "@/features/resources/shared/styles";
+import { cleanString } from "@/features/core/metadata/share/cleanString";
+import { MilGrid, MilSection } from "@/features/ui/military/MilSection";
+import { EDIT_PAGE_SX, MIL_FORM_SX } from "@/features/resources/shared/styles";
+import { WarehouseAdministrativeAreaFields } from "./WarehouseAdministrativeAreaFields";
 
 export function WarehouseResourceEdit() {
   return (
     <Edit
       mutationMode="pessimistic"
       sx={EDIT_PAGE_SX}
+      transform={(data: any) => {
+        const location = [
+          cleanString(data?.warehouseProvinceId),
+          cleanString(data?.warehouseDistrictId),
+          cleanString(data?.warehouseWardId),
+        ].filter(Boolean).join(", ");
+        if (!location) throw new Error("Vị trí kho là bắt buộc.");
+        return {
+          ...data,
+          location,
+          warehouseProvinceId: undefined,
+          warehouseDistrictId: undefined,
+          warehouseWardId: undefined,
+        };
+      }}
     >
       <SimpleForm
-        sx={FORM_SX}
+        sx={MIL_FORM_SX}
+        defaultValues={(record: any) => {
+          const parts = cleanString(record?.location).split(",").map((x) => cleanString(x));
+          return {
+            ...record,
+            warehouseProvinceId: parts[0] || "",
+            warehouseDistrictId: parts[1] || "",
+            warehouseWardId: parts[2] || "",
+          };
+        }}
       >
-        <TextInput source="name" label="Tên kho" validate={[required()]} fullWidth />
-        <TextInput source="location" label="Vị trí kho" validate={[required()]} fullWidth />
-        <TextInput source="capacity" label="Sức chứa (kg)" type="number" validate={[required()]} fullWidth />
+        <MilSection index={1} title="Thông tin kho">
+          <MilGrid>
+            <TextInput source="name" label="Tên kho" validate={[required()]} fullWidth />
+            <TextInput source="capacity" label="Sức chứa (kg)" type="number" validate={[required()]} fullWidth />
+          </MilGrid>
+        </MilSection>
+        <MilSection index={2} title="Vị trí kho">
+          <MilGrid>
+            <WarehouseAdministrativeAreaFields />
+          </MilGrid>
+        </MilSection>
       </SimpleForm>
     </Edit>
   );

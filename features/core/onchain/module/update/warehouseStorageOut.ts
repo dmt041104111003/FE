@@ -27,7 +27,6 @@ export async function deleteWarehouseStorageViaOutOnchain(params: any, deps: any
       container_ref_inline: formatProductionRefInline(
         (base as any)?.containerInventoryKey || (base as any)?.productId,
       ),
-      current_location: undefined,
       storage_created_at: deps.cleanString((base as any)?.createdAt) || new Date().toISOString(),
       storage_updated_at: new Date().toISOString(),
       storage_conditions: (base as any)?.conditions,

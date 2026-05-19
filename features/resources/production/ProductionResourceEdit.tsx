@@ -1,7 +1,8 @@
 "use client";
 
 import { Edit, SimpleForm } from "react-admin";
-import { EDIT_PAGE_SX, FORM_SX } from "@/features/resources/shared/styles";
+import { cleanString } from "@/features/core/metadata/share/cleanString";
+import { EDIT_PAGE_SX, MIL_FORM_SX } from "@/features/resources/shared/styles";
 import { ProductionEditToolbar } from "./ProductionEditToolbar";
 import { ProductionFormSections } from "./ProductionFormSections";
 
@@ -10,9 +11,33 @@ export function ProductionResourceEdit() {
     <Edit
       mutationMode="pessimistic"
       sx={EDIT_PAGE_SX}
+      transform={(data: any) => {
+        const location = [
+          cleanString(data?.productionProvinceId),
+          cleanString(data?.productionDistrictId),
+          cleanString(data?.productionWardId),
+        ].filter(Boolean).join(", ");
+        if (!location) throw new Error("Vị trí là bắt buộc.");
+        return {
+          ...data,
+          location,
+          productionProvinceId: undefined,
+          productionDistrictId: undefined,
+          productionWardId: undefined,
+        };
+      }}
     >
       <SimpleForm
-        sx={FORM_SX}
+        sx={MIL_FORM_SX}
+        defaultValues={(record: any) => {
+          const parts = cleanString(record?.location).split(",").map((x) => cleanString(x));
+          return {
+            ...record,
+            productionProvinceId: parts[0] || "",
+            productionDistrictId: parts[1] || "",
+            productionWardId: parts[2] || "",
+          };
+        }}
         toolbar={<ProductionEditToolbar />}
       >
         <ProductionFormSections />
