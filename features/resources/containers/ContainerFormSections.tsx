@@ -1,17 +1,25 @@
 "use client";
 
+import { TextField } from "@mui/material";
 import {
   ArrayInput,
+  FieldTitle,
   FormDataConsumer,
   SelectInput,
   SimpleFormIterator,
   TextInput,
   required,
+  useInput,
   useSimpleFormIteratorItem,
 } from "react-admin";
 import { MilGrid, MilSection } from "@/features/ui/military/MilSection";
 import { parseStringList } from "@/features/core/metadata/share/parseStringList";
-import { positiveIntegerMax100, positiveNumber } from "@/features/resources/shared/numberHelpers";
+import {
+  BOX_QUANTITY_MAX,
+  BOX_QUANTITY_MIN,
+  positiveIntegerMax100,
+  positiveNumber,
+} from "@/features/resources/shared/numberHelpers";
 import {
   EMPTY_PARTICIPANT_ROW,
   normalizeParticipantRow,
@@ -66,6 +74,48 @@ export function buildParticipantPayload(rowsRaw: unknown) {
   };
 }
 
+function BoxQuantityInput({ disabled = false }: { disabled?: boolean }) {
+  const { field, fieldState, id, isRequired } = useInput({
+    source: "boxQuantity",
+    validate: [required(), positiveIntegerMax100],
+  });
+
+  const applyInput = (raw: string) => {
+    if (raw === "") {
+      field.onChange("");
+      return;
+    }
+    if (!/^\d+$/.test(raw)) return;
+    const n = parseInt(raw, 10);
+    if (n < BOX_QUANTITY_MIN || n > BOX_QUANTITY_MAX) return;
+    field.onChange(n);
+  };
+
+  return (
+    <TextField
+      id={id}
+      label={<FieldTitle label="Số lượng thùng" source="boxQuantity" isRequired={isRequired} />}
+      type="text"
+      inputMode="numeric"
+      value={field.value === undefined || field.value === null ? "" : String(field.value)}
+      onChange={(e) => applyInput(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "-" || e.key === "+" || e.key === "e" || e.key === "E" || e.key === ".") {
+          e.preventDefault();
+        }
+      }}
+      onPaste={(e) => {
+        e.preventDefault();
+        applyInput(e.clipboardData.getData("text").trim());
+      }}
+      error={!!fieldState.error}
+      helperText={fieldState.error?.message}
+      disabled={disabled}
+      fullWidth
+    />
+  );
+}
+
 function ParticipantRow({
   disabled = false,
   creatorRowLocked = false,
@@ -97,9 +147,7 @@ export function ContainerFormSections({
   return (
     <MilSection index={1} title="Thông tin thùng hàng">
       <MilGrid>
-        {showBoxQuantity ? (
-          <TextInput source="boxQuantity" label="Số lượng thùng" type="number" validate={[required(), positiveIntegerMax100]} disabled={formLocked} fullWidth />
-        ) : null}
+        {showBoxQuantity ? <BoxQuantityInput disabled={formLocked} /> : null}
         <SelectInput source="containerType" label="Loại thùng" choices={[{ id: "CARTON", name: "Carton" }, { id: "PALLET_BOX", name: "Pallet box" }, { id: "PLASTIC_CONTAINER", name: "Container nhựa" }]} optionValue="id" optionText="name" validate={[required()]} disabled={formLocked} fullWidth />
         <TextInput source="weightPerBoxKg" label="Khối lượng mỗi thùng (kg)" type="number" validate={[required(), positiveNumber]} disabled={formLocked} fullWidth />
         <TextInput source="productName" label="Tên sản phẩm" validate={[required()]} disabled={formLocked} fullWidth />

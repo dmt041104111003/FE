@@ -4,15 +4,9 @@ import { waitForEntityVerified } from "@/features/core/onchain/waitForEntityVeri
 import { signerContextToApiBody } from "@/features/core/onchain/signerContext";
 import { resolveParticipantLocationTexts } from "@/features/resources/shared/locationHelpers";
 import { makeContainerCode } from "@/features/resources/shared/code";
+import { parseBoxQuantityStrict } from "@/features/resources/shared/numberHelpers";
 
 const BATCH_SIZE = 5;
-
-function parseBoxQuantity(value: unknown) {
-  const n = Math.floor(Number(String(value ?? "").trim()));
-  if (!Number.isFinite(n) || n < 1) return 1;
-  if (n > 100) return 100;
-  return n;
-}
 
 export async function createContainerBatchOnchain(
   params: any,
@@ -23,7 +17,7 @@ export async function createContainerBatchOnchain(
   const owners = deps.buildOwnerList(params.data, owner);
   const signer = await deps.resolveSignerContext(deps, { participantRows: params.data?.participantRows });
   const signerBody = signerContextToApiBody(signer);
-  const boxQuantity = parseBoxQuantity(params.data?.boxQuantity);
+  const boxQuantity = parseBoxQuantityStrict(params.data?.boxQuantity);
   const shared = { ...(params.data as any) };
   delete shared.boxQuantity;
   const locationTexts = await resolveParticipantLocationTexts(shared.participantLocationLabels);

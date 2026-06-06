@@ -8,6 +8,7 @@ import { buildParticipantPayload, ContainerFormSections } from "./ContainerFormS
 import { ContainerCreateToolbar } from "./ContainerToolbar";
 import { createContainerBatchOnchain } from "@/features/core/onchain/module/create/containerBatch";
 import { getOnchainFlowDeps } from "@/features/core/onchain/getOnchainFlowDeps";
+import { validateBoxQuantity } from "@/features/resources/shared/numberHelpers";
 
 export function ContainerResourceCreate() {
   const notify = useNotify();
@@ -20,6 +21,11 @@ export function ContainerResourceCreate() {
     setSubmitting(true);
     setProgress("Đang bắt đầu tạo thùng hàng...");
     try {
+      const boxQuantityError = validateBoxQuantity(data?.boxQuantity);
+      if (boxQuantityError) {
+        notify(boxQuantityError, { type: "error" });
+        return;
+      }
       const participants = buildParticipantPayload(data?.participantRows);
       const payload = {
         ...data,
