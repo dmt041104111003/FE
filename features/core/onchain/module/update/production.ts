@@ -1,6 +1,8 @@
 import { saveContractUnsignedTx } from "@/features/core/onchain/contract/saveContractUnsignedTx";
 import { signAndPublishUnsignedTx } from "@/features/core/onchain/tx/signAndPublishUnsignedTx";
 import { triggerVerifyPending } from "@/features/core/onchain/triggerVerifyPending";
+import { signerContextToApiBody } from "@/features/core/onchain/signerContext";
+import { codesToLocationText } from "@/features/resources/shared/locationHelpers";
 import { normalizeEvidenceFilesForForm } from "@/features/resources/shared/evidenceFiles";
 
 export async function updateProductionOnchain(params: any, deps: any) {
@@ -11,6 +13,9 @@ export async function updateProductionOnchain(params: any, deps: any) {
   if (!inventoryKey) throw new Error("inventoryKey is required.");
   const base = params.previousData || {};
   const mergedForMetadata = { ...base, ...(params.data || {}) };
+  const locationText = await codesToLocationText(mergedForMetadata?.location);
+  const mergedWithTextLocation = { ...mergedForMetadata, location: locationText };
+  const signer = await deps.resolveSignerContext(deps, { location: locationText });
 
   const evidenceFiles = deps.pickRawFiles((params.data as any)?.newEvidenceFiles);
   const existingEvidenceFilesIpfs = deps.normalizeIpfsUriList(
@@ -20,10 +25,11 @@ export async function updateProductionOnchain(params: any, deps: any) {
   const evidenceFilesIpfs = Array.from(new Set([...existingEvidenceFilesIpfs, ...newEvidenceFilesIpfs]));
   const owners = deps.buildOwnerList(owner);
   const metadata = deps.buildProductionMetadataPatch(
-    mergedForMetadata,
+    mergedWithTextLocation,
     base,
     newEvidenceFilesIpfs,
     owners,
+    signer,
   );
   const unsigned = await saveContractUnsignedTx(
     deps.httpClient,
@@ -38,6 +44,7 @@ export async function updateProductionOnchain(params: any, deps: any) {
       ...params.data,
       txHash,
       evidenceFiles: evidenceFilesIpfs,
+      ...signerContextToApiBody(signer),
     }),
   });
   await triggerVerifyPending(deps.httpClient, deps.BACKEND_URL, txHash);

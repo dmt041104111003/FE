@@ -17,6 +17,7 @@ import { deleteContainerOnchain } from "@/features/core/onchain/module/delete/co
 import { deleteProductionOnchain } from "@/features/core/onchain/module/delete/production";
 import { getMe } from "@/features/core/authProvider";
 import { buildOwnerList } from "@/features/core/onchain/owners/buildOwnerList";
+import { resolveSignerContext } from "@/features/core/onchain/signerContext";
 import {
   normalizeEvidenceFilesForForm,
   normalizeIpfsUriList,
@@ -92,6 +93,7 @@ function getOnchainFlowDeps() {
     buildProductionMetadataPatch,
     buildContainerMetadata,
     buildMappedMetadata,
+    resolveSignerContext,
   };
 }
 
