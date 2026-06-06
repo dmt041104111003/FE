@@ -157,7 +157,7 @@ export function ProductionFormSections() {
                     className="block overflow-hidden rounded border border-neutral-300"
                   >
                     <EvidenceImage
-                      uri={file.src}
+                      uri={file.uri}
                       alt={file.title}
                       className="h-28 w-28 object-cover"
                     />

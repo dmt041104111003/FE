@@ -14,6 +14,7 @@ export function EvidenceImage({
 }) {
   const urls = React.useMemo(() => ipfsGatewayUrls(uri), [uri]);
   const [index, setIndex] = React.useState(0);
+  React.useEffect(() => setIndex(0), [uri]);
   const src = urls[index] || "";
 
   if (!src) return null;
