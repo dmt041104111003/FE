@@ -12,8 +12,10 @@ export async function updateProductionOnchain(params: any, deps: any) {
   const base = params.previousData || {};
   const mergedForMetadata = { ...base, ...(params.data || {}) };
 
-  const evidenceFiles = deps.pickRawFiles((params.data as any)?.evidenceFiles);
-  const existingEvidenceFilesIpfs = deps.normalizeIpfsUriList(base?.evidenceFiles);
+  const evidenceFiles = deps.pickRawFiles((params.data as any)?.newEvidenceFiles);
+  const existingEvidenceFilesIpfs = deps.normalizeIpfsUriList(
+    base?.evidenceFiles ?? base?.images,
+  );
   const newEvidenceFilesIpfs = await deps.uploadMany(evidenceFiles);
   const evidenceFilesIpfs = Array.from(new Set([...existingEvidenceFilesIpfs, ...newEvidenceFilesIpfs]));
   const owners = deps.buildOwnerList(owner);

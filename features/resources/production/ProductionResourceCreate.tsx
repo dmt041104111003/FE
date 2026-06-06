@@ -35,7 +35,7 @@ export function ProductionResourceCreate() {
         defaultValues={{
           code: makeDailyCode("VU"),
           status: "CREATED",
-          evidenceFiles: [],
+          newEvidenceFiles: [],
         }}
         toolbar={<ProductionCreateToolbar />}
       >

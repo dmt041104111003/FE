@@ -5,7 +5,9 @@ import { normalizeEvidenceFilesForForm } from "@/features/resources/shared/evide
 
 export async function createProductionOnchain(params: any, deps: any) {
   const { owner } = await deps.getSessionOwner();
-  const evidenceFiles = deps.pickRawFiles((params.data as any)?.evidenceFiles);
+  const evidenceFiles = deps.pickRawFiles(
+    (params.data as any)?.newEvidenceFiles ?? (params.data as any)?.evidenceFiles,
+  );
   const evidenceFilesIpfs = await deps.uploadMany(evidenceFiles);
   const owners = deps.buildOwnerList(owner);
   const metadata = deps.buildProductionMetadata(params.data, null, evidenceFilesIpfs, owners);

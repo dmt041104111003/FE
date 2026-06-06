@@ -1,10 +1,28 @@
 import { cleanString } from "@/features/core/metadata/share/cleanString";
 
-export function ipfsToHttpUrl(uri: string): string {
+function ipfsCid(uri: string): string {
   const raw = cleanString(uri);
   if (!raw) return "";
-  if (raw.startsWith("ipfs://")) return `https://ipfs.io/ipfs/${raw.slice("ipfs://".length)}`;
+  if (raw.startsWith("ipfs://")) return raw.slice("ipfs://".length).split("/")[0] || "";
+  if (raw.startsWith("https://") || raw.startsWith("http://")) return "";
   return raw;
+}
+
+export function ipfsGatewayUrls(uri: string): string[] {
+  const raw = cleanString(uri);
+  if (!raw) return [];
+  if (raw.startsWith("http://") || raw.startsWith("https://")) return [raw];
+  const cid = ipfsCid(raw);
+  if (!cid) return [];
+  return [
+    `https://cloudflare-ipfs.com/ipfs/${cid}`,
+    `https://ipfs.io/ipfs/${cid}`,
+    `https://dweb.link/ipfs/${cid}`,
+  ];
+}
+
+export function ipfsToHttpUrl(uri: string): string {
+  return ipfsGatewayUrls(uri)[0] || "";
 }
 
 function extractIpfsUri(item: unknown): string {
