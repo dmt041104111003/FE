@@ -5,6 +5,7 @@ import {
   DateInput,
   FileField,
   FileInput,
+  maxValue,
   required,
   SelectInput,
   TextInput,
@@ -12,6 +13,11 @@ import {
 import { useWatch } from "react-hook-form";
 import { normalizeEvidenceFilesForForm } from "@/features/resources/shared/evidenceFiles";
 import { MilGrid, MilSection } from "@/features/ui/military/MilSection";
+import {
+  datePickerBounds,
+  seedingDateBounds,
+  todayDateInputValue,
+} from "@/features/resources/shared/dateInputBounds";
 import { positiveNumber } from "@/features/resources/shared/numberHelpers";
 import { CERTIFICATIONS } from "./constants";
 import { ProductionAdministrativeAreaFields } from "./ProductionAdministrativeAreaFields";
@@ -28,6 +34,8 @@ export function ProductionFormSections() {
   const hasOtherCertification = certifications.includes("other");
   const fullyLocked = status === "CLOSED";
   const lockedCore = fullyLocked;
+  const seedingMax = todayDateInputValue();
+  const seedingDateProps = datePickerBounds(seedingDateBounds());
 
   return (
     <>
@@ -60,8 +68,9 @@ export function ProductionFormSections() {
             source="seedingDate"
             label="Ngày gieo trồng"
             disabled={lockedCore}
-            validate={[required()]}
+            validate={[required(), maxValue(seedingMax, "Không chọn ngày tương lai")]}
             fullWidth
+            {...seedingDateProps}
           />
           {fullyLocked ? (
             <DateInput source="harvestDate" label="Ngày thu hoạch" disabled fullWidth />
