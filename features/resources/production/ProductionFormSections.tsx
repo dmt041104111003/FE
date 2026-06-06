@@ -23,6 +23,7 @@ import {
 import { positiveNumber } from "@/features/resources/shared/numberHelpers";
 import { CERTIFICATIONS } from "./constants";
 import { ProductionAdministrativeAreaFields } from "./ProductionAdministrativeAreaFields";
+import { ProductionFacilityAutofill } from "./ProductionFacilityAutofill";
 
 export function ProductionFormSections() {
   const record = useRecordContext();
@@ -43,6 +44,7 @@ export function ProductionFormSections() {
 
   return (
     <>
+      <ProductionFacilityAutofill />
       {fullyLocked ? <span className="mil-badge">Đã thu hoạch</span> : null}
 
       <MilSection index={1} title="Thông tin vụ sản xuất">
@@ -51,11 +53,15 @@ export function ProductionFormSections() {
           <TextInput
             source="facilityId"
             label="Tên cơ sở sản xuất"
-            disabled={lockedCore}
+            disabled
             validate={[required()]}
             fullWidth
+            helperText="Tự lấy từ tên hiển thị trong hồ sơ"
           />
-          <ProductionAdministrativeAreaFields disabled={lockedCore} />
+          <div className="md:col-span-2 text-sm text-neutral-600 -mt-1 mb-1">
+            Địa chỉ tự lấy từ vị trí kho trong hồ sơ
+          </div>
+          <ProductionAdministrativeAreaFields />
           <SelectInput
             source="farmingMethod"
             label="Phương thức canh tác"
