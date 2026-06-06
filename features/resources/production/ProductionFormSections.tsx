@@ -56,11 +56,7 @@ export function ProductionFormSections() {
             disabled
             validate={[required()]}
             fullWidth
-            helperText="Tự lấy từ tên hiển thị trong hồ sơ"
           />
-          <div className="md:col-span-2 text-sm text-neutral-600 -mt-1 mb-1">
-            Địa chỉ tự lấy từ vị trí kho trong hồ sơ
-          </div>
           <ProductionAdministrativeAreaFields />
           <SelectInput
             source="farmingMethod"

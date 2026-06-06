@@ -23,19 +23,27 @@ export function shiftDateInputValue(value: string, days: number): string {
   return toDateInputValue(date);
 }
 
-/** Ngày gieo: không chọn tương lai */
 export function seedingDateBounds() {
   return { max: todayDateInputValue() };
 }
 
-/** Ngày thu hoạch: sau ngày gieo, không tương lai */
 export function harvestDateBounds(seedingDate: unknown) {
   const seeding = toDateInputValue(seedingDate);
   const today = todayDateInputValue();
   const min = seeding ? shiftDateInputValue(seeding, 1) : "";
-  let max = today;
-  if (min && max < min) max = min;
-  return { min, max };
+  return { min, max: today };
+}
+
+export function canSelectHarvestDate(seedingDate: unknown) {
+  const bounds = harvestDateBounds(seedingDate);
+  return Boolean(bounds.min && bounds.max && bounds.min <= bounds.max);
+}
+
+export function isHarvestDateValid(harvestDate: unknown, seedingDate: unknown) {
+  const harvest = toDateInputValue(harvestDate);
+  const bounds = harvestDateBounds(seedingDate);
+  if (!harvest || !bounds.min || !bounds.max || bounds.min > bounds.max) return false;
+  return harvest >= bounds.min && harvest <= bounds.max;
 }
 
 export function toLocalDate(value: unknown): Date | undefined {
@@ -45,7 +53,6 @@ export function toLocalDate(value: unknown): Date | undefined {
   return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
-/** Props khóa lịch react-admin DateInput (MUI X) + input HTML */
 export function datePickerBounds(bounds: { min?: string; max?: string }) {
   const htmlInput: Record<string, string> = {};
   if (bounds.min) htmlInput.min = bounds.min;

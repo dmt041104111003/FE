@@ -9,7 +9,11 @@ import {
   useSaveContext,
 } from "react-admin";
 import { useFormContext, useWatch } from "react-hook-form";
-import { harvestDateBounds, toDateInputValue } from "@/features/resources/shared/dateInputBounds";
+import {
+  canSelectHarvestDate,
+  harvestDateBounds,
+  isHarvestDateValid,
+} from "@/features/resources/shared/dateInputBounds";
 import { type ProductionStatus } from "./constants";
 
 export function ProductionEditToolbar() {
@@ -24,7 +28,7 @@ export function ProductionEditToolbar() {
   const verified = Boolean(useWatch({ name: "verified" }));
   const seedingDate = String(useWatch({ name: "seedingDate" }) ?? "");
   const harvestBounds = React.useMemo(() => harvestDateBounds(seedingDate), [seedingDate]);
-  const canHarvestByDate = Boolean(harvestBounds.min && harvestBounds.min <= harvestBounds.max);
+  const canHarvestByDate = canSelectHarvestDate(seedingDate);
   const [harvestModalOpen, setHarvestModalOpen] = React.useState(false);
   const [harvestInput, setHarvestInput] = React.useState("");
   const [actualYieldInput, setActualYieldInput] = React.useState("");
@@ -95,7 +99,15 @@ export function ProductionEditToolbar() {
               value={harvestInput}
               min={harvestBounds.min}
               max={harvestBounds.max}
-              onChange={(e) => setHarvestInput(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                setHarvestInput(next);
+                if (next && !isHarvestDateValid(next, seedingDate)) {
+                  setHarvestError("Ngày thu hoạch phải sau ngày gieo và không vượt hôm nay.");
+                } else {
+                  setHarvestError("");
+                }
+              }}
             />
             <label className="mb-2 mt-3 block text-sm">Sản lượng thực tế (kg) *</label>
             <input
@@ -122,24 +134,12 @@ export function ProductionEditToolbar() {
                 disableElevation
                 type="button"
                 onClick={(e) => {
-                  const harvest = harvestInput ? new Date(harvestInput) : null;
-                  const seed = seedingDate ? new Date(seedingDate) : null;
-                  if (!harvest || Number.isNaN(harvest.getTime())) {
+                  if (!harvestInput) {
                     e.preventDefault();
                     setHarvestError("Vui lòng nhập ngày thu hoạch.");
                     return;
                   }
-                  if (!seed || Number.isNaN(seed.getTime())) {
-                    e.preventDefault();
-                    setHarvestError("Không tìm thấy ngày gieo trồng.");
-                    return;
-                  }
-                  const harvestIso = toDateInputValue(harvestInput);
-                  if (
-                    harvest.getTime() <= seed.getTime() ||
-                    (harvestBounds.min && harvestIso < harvestBounds.min) ||
-                    (harvestBounds.max && harvestIso > harvestBounds.max)
-                  ) {
+                  if (!isHarvestDateValid(harvestInput, seedingDate)) {
                     e.preventDefault();
                     setHarvestError("Ngày thu hoạch phải sau ngày gieo và không vượt hôm nay.");
                     return;
